@@ -1,0 +1,66 @@
+# -------------------------
+# Python
+# -------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Compiled / temporary files
+*.tmp
+*.log
+*.out
+
+# Coverage / testing
+.coverage
+htmlcov/
+
+# Distribution / packaging
+build/
+dist/
+.eggs/
+*.egg-info/
+
+# IDE / editor files
+.vscode/
+.idea/
+
+# MacOS
+.DS_Store
+
+# -------------------------
+# Project-specific
+# -------------------------
+# Data folders (optional — keep raw & processed locally)
+data/raw/*
+data/processed/*
+data/metadata/*
+
+# Allow placeholder files
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/metadata/.gitkeep
+
+# Generated reports / figures
+reports/
+figures/
+
+# Scripts outputs
+*.pdf
+*.html
+*.png
+
+# Ignore key / credential files (safety)
+*.key
+*.json
+*.yaml
+!config/settings.yaml   # Keep the project config tracked
