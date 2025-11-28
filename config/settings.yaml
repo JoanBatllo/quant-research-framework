@@ -1,0 +1,27 @@
+
+project:
+  name: "quant-research-framework"
+  timezone: "UTC"
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  metadata_dir: "data/metadata"
+
+  # For now we assume we will read from CSV files stored locally.
+  default_provider: "local_csv"
+
+  # Default instrument and sampling for early experiments
+  default_symbol: "SPY"        # S&P 500 ETF as a classic example
+  start_date: "2015-01-01"
+  end_date: "2024-12-31"
+  price_frequency: "D"         # D = daily, can be 'H', 'W', etc. later
+
+backtest:
+  initial_cash: 100000.0       # Starting portfolio value
+  trading_cost_bps: 1.0        # 1 basis point = 0.01% per trade, for realistic terms.
+  slippage_bps: 0.5            # extra implicit cost for realism
+  benchmark_symbol: "SPY"      # For performance comparison
+
+risk:
+  risk_free_rate_annual: 0.02  # 2% annual RF for Sharpe, etc.
