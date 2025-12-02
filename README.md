@@ -58,7 +58,6 @@ pip install -r requirements.txt
 python -m scripts.download_default_data
 ### 3. Run a simple backtest
 python -m scripts.run_simple_backtest
----
 
 ## 🔧 Pipeline Overview
 
