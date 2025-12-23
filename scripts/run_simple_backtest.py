@@ -15,19 +15,31 @@ def main():
     # 3) Run backtest
     result = run_backtest(data, signal)
 
-    # 4) Print basic info
+    # 4) Calculate and print performance metrics
+    from src.analysis.performance import summarize_performance
+    
     print("=== Simple Backtest: Always Long ===")
     print("Start date:", data.index.min().date())
     print("End date:  ", data.index.max().date())
-    print("Initial cash:", result.equity_curve.iloc[0])
-    print("Final equity:", result.equity_curve.iloc[-1])
-    total_return = result.equity_curve.iloc[-1] / result.equity_curve.iloc[0] - 1
-    print(f"Total return: {total_return:.2%}")
+    
+    # Calculate metrics
+    metrics = summarize_performance(result.equity_curve)
+    
+    print("\n--- Performance Metrics ---")
+    for metric, value in metrics.items():
+        if "Ratio" in metric:
+             print(f"{metric:<20}: {value:.2f}")
+        else:
+             print(f"{metric:<20}: {value:.2f}")
     print("\nSample of equity curve:")
     print(result.equity_curve.head())
     print("...")
     print(result.equity_curve.tail())
 
+    # 5) Visualize results
+    from src.analysis.plotting import plot_performance
+    print("\n[INFO] Displaying performance plot...")
+    plot_performance(result, title="Strategy: Always Long (SPY)")
 
 if __name__ == "__main__":
     main()
