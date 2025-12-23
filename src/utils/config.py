@@ -5,10 +5,6 @@ import yaml  # Make sure to add pyyaml to requirements.txt
 
 
 # Locate the settings.yaml file relative to this file
-# This assumes your structure is:
-# project_root/
-#   config/settings.yaml
-#   src/utils/config.py (this file)
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_PATH = PROJECT_ROOT / "config" / "settings.yaml"
 
