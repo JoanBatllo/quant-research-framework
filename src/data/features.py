@@ -20,31 +20,41 @@ def generate_features(data: pd.DataFrame) -> pd.DataFrame:
     """
     df = data.copy()
     
+    # Ensure we are working with 1D Series for calculations
+    # This prevents "Per-column arrays must each be 1-dimensional" error
+    # if the dataframe has MultiIndex columns or duplicate names.
+    close_series = df["Close"]
+    if isinstance(close_series, pd.DataFrame):
+        close_series = close_series.iloc[:, 0] # Take first column if duplicate
+    
     # Ensure we have returns
     if "Return" not in df.columns:
-        df["Return"] = df["Close"].pct_change()
+        df["Return"] = close_series.pct_change()
+    
+    # Use the safe series for lags and calcs
+    ret_series = df["Return"]
         
     # --- 1. Momentum / Trends ---
     # Return Lags (The most important features: what happened yesterday?)
-    df["Return_Lag1"] = df["Return"].shift(1)
-    df["Return_Lag2"] = df["Return"].shift(2)
-    df["Return_Lag5"] = df["Return"].shift(5)
+    df["Return_Lag1"] = ret_series.shift(1)
+    df["Return_Lag2"] = ret_series.shift(2)
+    df["Return_Lag5"] = ret_series.shift(5)
     
     # --- 2. Moving Averages Distances ---
     # Is the price above or below its average? (Normalized by price)
-    ma_10 = df["Close"].rolling(window=10).mean()
-    ma_50 = df["Close"].rolling(window=50).mean()
+    ma_10 = close_series.rolling(window=10).mean()
+    ma_50 = close_series.rolling(window=50).mean()
     
-    df["Dist_MA10"] = (df["Close"] - ma_10) / ma_10
-    df["Dist_MA50"] = (df["Close"] - ma_50) / ma_50
+    df["Dist_MA10"] = (close_series - ma_10) / ma_10
+    df["Dist_MA50"] = (close_series - ma_50) / ma_50
     
     # --- 3. Volatility ---
     # Rolling standard deviation of returns
-    df["Vol_5d"] = df["Return"].rolling(window=5).std()
+    df["Vol_5d"] = ret_series.rolling(window=5).std()
     
     # --- 4. RSI (Relative Strength Index) ---
     # Standard 14-day RSI
-    delta = df["Close"].diff()
+    delta = close_series.diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
     rs = gain / loss
@@ -54,8 +64,12 @@ def generate_features(data: pd.DataFrame) -> pd.DataFrame:
     # Volume today / Average Volume of last 20 days
     # Avoid division by zero if volume is missing
     if "Volume" in df.columns:
-        vol_ma = df["Volume"].rolling(window=20).mean()
-        df["RVOL"] = df["Volume"] / vol_ma
+        vol_series = df["Volume"]
+        if isinstance(vol_series, pd.DataFrame):
+             vol_series = vol_series.iloc[:, 0]
+             
+        vol_ma = vol_series.rolling(window=20).mean()
+        df["RVOL"] = vol_series / vol_ma
 
     # --- 6. Target Variable (What we want to predict) ---
     # We want to predict if TOMORROW's return will be positive.

@@ -44,6 +44,10 @@ def standardize_price_dataframe(
         # For a single ticker, second level is usually the ticker name ("SPY").
         # We drop it and keep only the price type ("Open", "Close", etc.).
         df.columns = df.columns.get_level_values(0)
+        
+    # Remove duplicate columns if any resulted from flattening
+    # (Fixes "Per-column arrays must each be 1-dimensional" error in downstream tasks)
+    df = df.loc[:, ~df.columns.duplicated()]
 
     # ---- 2. Normalize column names ----
     # We want standard names regardless of how yfinance spells them.

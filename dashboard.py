@@ -115,6 +115,11 @@ with tab_ml:
                 # 1. Load Data
                 df_ml = get_price_data(ticker, "2010-01-01", str(end_date)) # Use long history for ML
                 
+                # Preprocess (Standardize + Returns)
+                df_ml = standardize_price_dataframe(df_ml)
+                # Note: generate_features already calculates returns if missing, but we call it here for consistency
+                # df_ml = add_return_columns(df_ml) 
+
                 # 2. Features
                 df_features = generate_features(df_ml)
                 st.write(f"Data Shape after Feature Engineering: {df_features.shape}")

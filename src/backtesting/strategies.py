@@ -24,6 +24,59 @@ def always_long(data: pd.DataFrame) -> pd.Series:
     return position
 
 
+def ml_strategy(data: pd.DataFrame, model, feature_cols: list[str]) -> pd.Series:
+    """
+    Machine Learning Strategy.
+    
+    Uses a pre-trained classification model to predict market direction.
+    
+    Logic:
+    - Long (1.0) if Model predicts Up (Class 1)
+    - Cash (0.0) if Model predicts Down (Class 0)
+    
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Must contain the necessary feature columns used by the model.
+    model : sklearn estimator
+        Trained model with a .predict() method.
+    feature_cols : list[str]
+        List of column names expected by the model.
+        
+    Returns
+    -------
+    pd.Series
+        Position series (1.0 or 0.0).
+    """
+    # Verify features exist
+    missing_cols = [c for c in feature_cols if c not in data.columns]
+    if missing_cols:
+        raise ValueError(f"Data is missing features required by model: {missing_cols}")
+        
+    # Predict (returns 0 or 1)
+    # We use .predict(X) directly on the feature subset
+    X = data[feature_cols]
+    
+    # Handle NaNs (Model can't predict on NaNs). 
+    # Strategy: Stay out of market (0) if data is missing.
+    # We'll fill NaNs with 0 temporarily just to run predict without error, 
+    # but then mask the result to 0 position for those rows.
+    # A cleaner approach in production is to dropna, but backtest engine needs aligned index.
+    
+    # Better approach: Predict only on valid rows
+    valid_mask = X.notna().all(axis=1)
+    
+    predictions = pd.Series(0.0, index=data.index)
+    
+    if valid_mask.any():
+        X_valid = X[valid_mask]
+        preds_valid = model.predict(X_valid)
+        predictions[valid_mask] = preds_valid.astype(float)
+    
+    predictions.name = "ml_strategy_rf"
+    return predictions
+
+
 def moving_average_crossover(data: pd.DataFrame, fast_window: int = 10, slow_window: int = 50) -> pd.Series:
     """
     Simple Moving Average Crossover strategy.
