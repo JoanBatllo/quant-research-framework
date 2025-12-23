@@ -1,7 +1,7 @@
-pandas
-numpy
-pyyaml
-yfinance
 matplotlib
-
-
+numpy
+pandas
+scikit-learn
+seaborn
+streamlit
+yfinance

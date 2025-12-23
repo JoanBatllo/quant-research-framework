@@ -1,0 +1,158 @@
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+from src.data.loaders import get_price_data
+from src.data.preprocessing import prepare_price_data, standardize_price_dataframe, add_return_columns
+from src.backtesting.strategies import always_long, moving_average_crossover
+from src.backtesting.engine import run_backtest
+from src.analysis.performance import summarize_performance
+from src.data.features import generate_features
+from src.models.trainer import ModelTrainer
+
+st.set_page_config(page_title="Quant Research Dashboard", layout="wide")
+
+st.title("Quant Research Framework Dashboard")
+
+# Sidebar - Global Settings
+st.sidebar.header("Global Settings")
+TICKER_OPTIONS = ["SPY", "QQQ", "IWM", "AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "GOOGL", "BTC-USD", "ETH-USD"]
+ticker = st.sidebar.selectbox("Ticker Symbol", options=TICKER_OPTIONS, index=0)
+
+start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2015-01-01"))
+end_date = st.sidebar.date_input("End Date", pd.to_datetime("today"))
+
+# Tabs
+tab_backtest, tab_ml = st.tabs(["📈 Strategy Backtester", "🤖 ML Laboratory"])
+
+# --- TAB 1: BACKTESTER ---
+with tab_backtest:
+    st.markdown("### Classic Strategy Backtesting")
+    
+    col_strat, col_act = st.columns([2, 1])
+    
+    with col_strat:
+        strategy_name = st.selectbox("Select Strategy", ["Always Long (Buy & Hold)", "Simple MA Crossover"])
+    
+    # Strat Params
+    fast_window, slow_window = 10, 50
+    if strategy_name == "Simple MA Crossover":
+        col_p1, col_p2 = st.columns(2)
+        fast_window = col_p1.slider("Fast MA", 2, 50, 10)
+        slow_window = col_p2.slider("Slow MA", 10, 200, 50)
+
+    with col_act:
+        st.write("") # Spacer
+        st.write("")
+        run_btn = st.button("Run Backtest", key="btn_run")
+        compare_btn = st.button("Compare with Benchmark", key="btn_compare")
+
+    if run_btn or compare_btn:
+        with st.spinner("Running Backtest..."):
+            try:
+                # Load & Preprocess
+                df = get_price_data(ticker, str(start_date), str(end_date))
+                df = standardize_price_dataframe(df)
+                df = add_return_columns(df)
+
+                # Define Logic
+                if strategy_name == "Always Long (Buy & Hold)":
+                    signal = always_long(df)
+                    expl = "Buys and holds the asset."
+                else:
+                    signal = moving_average_crossover(df, fast_window, slow_window)
+                    expl = f"Buy when MA({fast_window}) > MA({slow_window})."
+
+                res = run_backtest(df, signal)
+                metrics = summarize_performance(res.equity_curve)
+
+                if compare_btn:
+                    # Run Benchmark
+                    sig_bench = always_long(df)
+                    res_bench = run_backtest(df, sig_bench)
+                    met_bench = summarize_performance(res_bench.equity_curve)
+                    
+                    st.subheader("Comparison Results")
+                    
+                    # Metrics Table
+                    comp_df = pd.DataFrame({
+                        "Metric": metrics.keys(),
+                        "Selected Strategy": metrics.values(),
+                        "Benchmark (Buy&Hold)": met_bench.values()
+                    }).set_index("Metric")
+                    st.table(comp_df)
+                    
+                    # Chart
+                    fig = go.Figure()
+                    fig.add_trace(go.Scatter(x=res.equity_curve.index, y=res.equity_curve, name="Strategy"))
+                    fig.add_trace(go.Scatter(x=res_bench.equity_curve.index, y=res_bench.equity_curve, name="Benchmark"))
+                    fig.update_layout(template="plotly_dark", title="Equity Curve Comparison")
+                    st.plotly_chart(fig, use_container_width=True)
+
+                else:
+                    # Single Run
+                    col1, col2, col3, col4 = st.columns(4)
+                    col1.metric("Total Return", f"{metrics['Total Return (%)']:.2f}%")
+                    col2.metric("Sharpe", f"{metrics['Sharpe Ratio']:.2f}")
+                    col3.metric("Volatility", f"{metrics['Volatility (%)']:.2f}%")
+                    col4.metric("Max DD", f"{metrics['Max Drawdown (%)']:.2f}%")
+                    
+                    st.line_chart(res.equity_curve)
+
+            except Exception as e:
+                st.error(f"Error: {e}")
+
+# --- TAB 2: ML LABORATORY ---
+with tab_ml:
+    st.markdown("### 🧬 Machine Learning Model Training")
+    st.info("Here we train a Random Forest model to predict if tomorrow's return will be positive based on technical features.")
+    
+    col_ml_1, col_ml_2 = st.columns(2)
+    split_date = col_ml_1.date_input("Train/Test Split Date", pd.to_datetime("2023-01-01"))
+    
+    if st.button("🚀 Train Model", key="btn_train"):
+        with st.spinner("Generating Features & Training Model..."):
+            try:
+                # 1. Load Data
+                df_ml = get_price_data(ticker, "2010-01-01", str(end_date)) # Use long history for ML
+                
+                # 2. Features
+                df_features = generate_features(df_ml)
+                st.write(f"Data Shape after Feature Engineering: {df_features.shape}")
+                
+                # 3. Setup Trainer
+                feature_cols = [c for c in df_features.columns if c not in ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume', 'Return', 'Target']]
+                trainer = ModelTrainer(df_features, feature_cols, target='Target')
+                
+                # 4. Split
+                X_train, X_test, y_train, y_test = trainer.split_data(str(split_date))
+                
+                col_tr, col_te = st.columns(2)
+                col_tr.metric("Training Samples", len(X_train))
+                col_te.metric("Test Samples", len(X_test))
+                
+                # 5. Train
+                model = trainer.train()
+                
+                # 6. Evaluate
+                acc, report = trainer.evaluate()
+                
+                st.success(f"Model Trained! Test Accuracy: **{acc:.2%}**")
+                
+                # 7. Visualizations
+                st.subheader("Model Insights")
+                
+                # Feature Importance
+                fig_imp = trainer.plot_feature_importance()
+                st.pyplot(fig_imp)
+                
+                # Confusion Matrix
+                fig_cm = trainer.plot_confusion_matrix()
+                st.pyplot(fig_cm)
+                
+                # Detailed Report
+                st.subheader("Classification Report")
+                st.text(pd.DataFrame(report).transpose())
+
+            except Exception as e:
+                st.error(f"ML Error: {e}")
+

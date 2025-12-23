@@ -76,3 +76,36 @@ Contains everything needed to simulate a trading strategy in the past. Its purpo
 - Integrate these metrics into the backtest engine (`src/backtesting/engine.py`) so every backtest automatically reports these stats.
 - Visualize the equity curve and drawdowns.
 - Implement new strategies (e.g. Moving Average Crossover).
+
+---
+
+## Session 3 — Visualization & Dashboard (Product Staging)
+
+**WHAT WE DID**
+- Created `src/analysis/plotting.py` using `matplotlib` to generate professional charts of the Equity Curve and Drawdowns.
+- Built a **Web Dashboard** using `Streamlit` (`dashboard.py`):
+  - Interactive UI to select tickers (SPY, BTC, NVDA...) and date ranges.
+  - Implemented a Strategy Selector:
+    - **Buy & Hold** (Benchmark)
+    - **Simple MA Crossover** (with interactive sliders for Fast/Slow windows).
+  - Added a **comparison mode** to run two strategies side-by-side and compare metrics/graphs.
+  - Added dynamic explanations of strategy logic.
+- Refactored logic: Moved strategy code out of the dashboard into `src/backtesting/strategies.py` (keeping the UI clean).
+- Started the Machine Learning module (`src/data/features.py`) adding engineering features:
+  - Lags (Returns of previous days)
+  - Momentum (Distance from MA)
+  - Volatility
+  - RSI (Relative Strength Index)
+  - Relative Volume (RVOL)
+  - Target (Binary classification: next day UP or DOWN).
+
+**WHY THIS MATTERS**
+- **Visualization:** "A picture is worth a thousand numbers". It's essential to see the *path* of returns, not just the final number.
+- **Interactivity:** Allows rapid prototyping and "playing" with parameters to understand sensitivity (and potential overfitting).
+- **Refactoring:** Maintaining separation of concerns (UI code vs Logic code) is critical for long-term project health.
+- **ML Foundation:** We now have the "Fuel" (Features) ready for our AI models.
+
+**NEXT STEPS**
+- Train a Machine Learning model (Random Forest) using the features we just created.
+- Implement a `MachineLearningStrategy` that trades based on the model's predictions.
+- Evaluate if the AI can beat the simple Moving Average.

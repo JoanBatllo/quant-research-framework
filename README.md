@@ -1,162 +1,149 @@
-# Quant Research Framework
+# 🚀 Quant Research Framework
 
-A modular quantitative trading research framework built from scratch.  
-The project follows a clean, professional architecture used in real quant environments:
+<div align="center">
+  <img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="Python Version">
+  <img src="https://img.shields.io/badge/status-active-success.svg" alt="Status">
+  <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
+</div>
 
-**Data → Preprocessing → Backtesting → Strategies → Performance Analysis**
+<br />
 
-The goal is to provide a flexible pipeline for developing, testing, and evaluating trading strategies.
+> **A professional, modular, and extensible Quantitative Trading Research Framework built from scratch.**
+> Designed to bridge the gap between academic theory and real-world quantitative strategy development.
 
 ---
 
-## 📁 Project Structure
+## 📖 **Overview**
+
+This project is the culmination of advanced studies in **Artificial Intelligence and Data Science**, applied to the domain of **Quantitative Finance**. 
+
+The goal was to build a research-grade environment capable of:
+1.  **Ingesting and cleaning** financial market data.
+2.  **Backtesting** systematic trading strategies with rigor (accounting for transaction costs, lag, etc.).
+3.  **Analyzing performance** using industry-standard metrics (Sharpe, Drawdown, CAGR).
+4.  **Applying Machine Learning** to predict market movements.
+
+It avoids "black-box" backtesting libraries to ensure full transparency and control over every calculation, making it an ideal showcase of **data engineering**, **software architecture**, and **financial modeling** skills.
+
+---
+
+## ⚡ **Key Features**
+
+### 🏗 **Core Architecture**
+- **Modular Design:** Clear separation of concerns: `Data` → `Preprocessing` → `Features` → `Backtesting` → `Analysis`.
+- ** robust Data Pipeline:** Automated fetching from Yahoo Finance, cleaning, and standardization.
+- **Vectorized Backtester:** High-performance engine using pandas vectorization for instantaneous strategy simulation.
+
+### 🧠 **Machine Learning Integration**
+- **Feature Engineering:** Automated calculation of Technical Indicators (RSI, Momentum, Volatility, Moving Averages).
+- **ML Workflow:** End-to-end pipeline for training, validating, and testing models (e.g., Random Forest) to predict market direction.
+- **Evaluation:** Visual tools for Feature Importance, Confusion Matrices, and Classification Reports.
+
+### 📊 **Interactive Dashboard**
+- Built with **Streamlit**, offering a "Command Center" experience.
+- **Strategy Backtester:** Run, visualize, and compare strategies (e.g., *Buy & Hold* vs *MA Crossover*) in real-time.
+- **ML Laboratory:** Train AI models on the fly and inspect their learning process deeply.
+- **Professional Visualization:** Interactive charts using `Plotly` for Equity Curves, Drawdowns, and Signals.
+
+---
+
+## 🛠 **Installation**
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/quant-research-framework.git
+    cd quant-research-framework
+    ```
+
+2.  **Create a virtual environment (optional but recommended):**
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows: venv\Scripts\activate
+    ```
+
+3.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+---
+
+## 🚀 **Usage**
+
+### **1. Launch the Dashboard (Recommended)**
+The easiest way to interact with the framework is through the web interface.
+```bash
+python -m streamlit run dashboard.py
+```
+This will open a local web server where you can:
+- Select assets (SPY, BTC, NVDA...)
+- Run backtests interactively.
+- Train ML models without writing code.
+
+### **2. Run Scripts Manually**
+You can also run individual modules from the command line:
+
+*   **Download Data:**
+    ```bash
+    python -m scripts.download_default_data
+    ```
+
+*   **Run a CLI Backtest:**
+    ```bash
+    python -m scripts.run_simple_backtest
+    ```
+
+---
+
+## 📂 **Project Structure**
+
 ```text
 quant-research-framework/
 │
-├── data/                         # Local datasets
-│   ├── raw/                      # Raw market data (e.g., yfinance downloads)
-│   ├── processed/                # Clean, standardized datasets
-│   └── metadata/                 # Data descriptions, metadata, symbol lists
-│
-├── notebooks/                    # Exploration & research notebooks
+├── dashboard.py                  # 🚀 Main Entry Point (Web App)
+├── requirements.txt              # Project Dependencies
 │
 ├── src/
 │   ├── data/
-│   │   ├── loaders.py            # Download / load OHLCV price data
-│   │   └── preprocessing.py      # Cleaning, normalization, returns, prep pipeline
+│   │   ├── loaders.py            # Data ingestion (YFinance)
+│   │   ├── preprocessing.py      # Cleaning & Normalization
+│   │   └── features.py           # 🧠 Feature Engineering for ML
+│   │
+│   ├── models/
+│   │   └── trainer.py            # 🤖 ML Model Training & Evaluation Logic
 │   │
 │   ├── backtesting/
-│   │   ├── engine.py             # Backtest engine (positions → returns → equity)
-│   │   └── strategies.py         # Strategy definitions (signals)
+│   │   ├── engine.py             # Vectorized Backtest Engine
+│   │   └── strategies.py         # Strategy Logic (MA Cross, Buy&Hold, AI)
 │   │
 │   ├── analysis/
-│   │   └── performance.py        # Sharpe, volatility, drawdown, performance stats
+│   │   ├── performance.py        # Metrics (Sharpe, CAGR, Volatility)
+│   │   └── plotting.py           # Visualization Utilities
 │   │
 │   └── utils/
-│       └── config.py             # Global YAML configuration loader
+│       └── config.py             # Configuration Management
 │
-├── scripts/                      # Executable scripts
-│   ├── download_default_data.py  # Download SPY or configured symbol
-│   └── run_simple_backtest.py    # First full pipeline test (always long)
-│
-├── config/
-│   └── settings.yaml             # Project-wide configuration file
-│
-├── .gitignore
-├── README.md
-└── requirements.txt
+└── notebooks/                    # Jupyter Notebooks for Research
 ```
 
+---
+
+## 🔮 **Roadmap**
+
+- [x] **Core Framework:** Data Pipeline, Backtester, and Metrics.
+- [x] **Dashboard:** Interactive Web App for visualizing results.
+- [x] **Machine Learning:** Feature Engineering & Model Training Module.
+- [ ] **AI Strategy:** Deploying the trained ML model as a live trading strategy.
+- [ ] **optimization:** Implementing Walk-Forward Analysis and Hyperparameter Tuning.
+- [ ] **Portfolio Management:** Support for multi-asset portfolios and rebalancing.
 
 ---
 
-## 🚀 Getting Started
+## 👨‍💻 **Author**
 
-### 1. Install dependencies
-pip install -r requirements.txt
-### 2. Download default historical data
-python -m scripts.download_default_data
-### 3. Run a simple backtest
-python -m scripts.run_simple_backtest
-
-## 🔧 Pipeline Overview
-
-### **1. Data Loading**
-- Uses Yahoo Finance (`yfinance`)
-- Downloads OHLCV data for the configured symbol
-- Saves a copy under `data/raw/`
-
-### **2. Preprocessing**
-- Flattens MultiIndex columns from yfinance
-- Normalizes column names
-- Ensures clean, sorted `DatetimeIndex`
-- Computes simple & log returns
-- Outputs a clean DataFrame ready for backtesting
-
-### **3. Backtesting Engine**
-- Converts strategy signals into portfolio returns
-- Applies transaction costs
-- Calculates equity curve through compounding
-- Returns a `BacktestResult` object containing:
-  - positions  
-  - strategy returns  
-  - equity curve  
-
-### **4. Strategies**
-- Strategies generate **signals** (position time series)
-- Example implemented:
-  - `always_long` (baseline: 100% invested)
-- Future strategies will include:
-  - moving averages  
-  - RSI  
-  - volatility filters  
-  - ML-based signals  
-
-### **5. Performance Analysis** *(coming next)*
-- Total return  
-- Annualized return (CAGR)  
-- Volatility  
-- Sharpe ratio  
-- Maximum drawdown  
-- Win rate  
-- Summary performance table  
+**Joan Batlló**  
+*AI & Data Science Student | FinTech Enthusiast*
 
 ---
 
-## 🎯 Purpose of the Project
-
-This project is built step-by-step as a learning exercise to understand:
-
-- Financial data engineering  
-- Quantitative strategy research  
-- Backtesting methodology  
-- Software architecture for quant systems  
-- Modular, reusable design practices  
-
-The final goal is to build a **research-grade trading environment** that can scale to:
-
-- multiple assets  
-- multiple strategies  
-- hyperparameter sweeps  
-- ML models  
-- portfolio-level analysis  
-- risk overlays  
-
----
-
-## 📌 Roadmap
-
-- [x] Project structure and configuration system  
-- [x] Data loader (Yahoo Finance)  
-- [x] Preprocessing pipeline  
-- [x] Backtesting engine  
-- [x] Baseline strategy (`always_long`)  
-- [ ] Performance metrics module  
-- [ ] Visualization tools (equity curves, drawdowns)  
-- [ ] Additional strategies (MA Cross, RSI, etc.)  
-- [ ] Portfolio engine (multi-asset)  
-- [ ] ML-based strategy prototypes  
-
----
-
-## 🧠 About This Project
-
-This framework is built step-by-step with strong emphasis on:
-
-- clear explanations  
-- best practices  
-- modular design  
-- interview-ready understanding  
-
-Every component is documented so it can be explained confidently in a technical interview or used as a foundation for larger quant projects.
-
----
-
-If you want, I can also generate:
-
-- a **technical architecture diagram**  
-- an **interview explanation section**  
-- a **roadmap.md** file  
-- a **CONTRIBUTING.md** file  
-
-Just ask!
+*Disclaimer: This project is for educational and research purposes only. It is not financial advice.*
