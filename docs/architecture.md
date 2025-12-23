@@ -7,7 +7,6 @@ This document illustrates the high-level architecture of the Quant Research Fram
 ## 🏗 System Architecture
 
 ### Visual Diagram (Mermaid)
-*(To view this diagram, use the GitHub preview or a Mermaid-compatible editor)*
 
 ```mermaid
 graph TD
