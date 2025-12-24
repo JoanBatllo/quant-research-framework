@@ -13,7 +13,7 @@
 
 ---
 
-## 📖 **Overview**
+## **Overview**
 
 This project is the culmination of advanced studies in **Artificial Intelligence and Data Science**, applied to the domain of **Quantitative Finance**. 
 
@@ -27,19 +27,19 @@ It avoids "black-box" backtesting libraries to ensure full transparency and cont
 
 ---
 
-## ⚡ **Key Features**
+## **Key Features**
 
-### 🏗 **Core Architecture**
+### **Core Architecture**
 - **Modular Design:** Clear separation of concerns: `Data` → `Preprocessing` → `Features` → `Backtesting` → `Analysis`.
-- ** robust Data Pipeline:** Automated fetching from Yahoo Finance, cleaning, and standardization.
+- **Robust Data Pipeline:** Automated fetching from Yahoo Finance, cleaning, and standardization.
 - **Vectorized Backtester:** High-performance engine using pandas vectorization for instantaneous strategy simulation.
 
-### 🧠 **Machine Learning Integration**
+### **Machine Learning Integration**
 - **Feature Engineering:** Automated calculation of Technical Indicators (RSI, Momentum, Volatility, Moving Averages).
 - **ML Workflow:** End-to-end pipeline for training, validating, and testing models (e.g., Random Forest) to predict market direction.
 - **Evaluation:** Visual tools for Feature Importance, Confusion Matrices, and Classification Reports.
 
-### 📊 **Interactive Dashboard**
+### **Interactive Dashboard**
 - Built with **Streamlit**, offering a "Command Center" experience.
 - **Strategy Backtester:** Run, visualize, and compare strategies (e.g., *Buy & Hold* vs *MA Crossover*) in real-time.
 - **ML Laboratory:** Train AI models on the fly and inspect their learning process deeply.
@@ -47,7 +47,7 @@ It avoids "black-box" backtesting libraries to ensure full transparency and cont
 
 ---
 
-## 🛠 **Installation**
+## **Installation**
 
 1.  **Clone the repository:**
     ```bash
@@ -68,7 +68,7 @@ It avoids "black-box" backtesting libraries to ensure full transparency and cont
 
 ---
 
-## 🚀 **Usage**
+## **Usage**
 
 ### **1. Launch the Dashboard (Recommended)**
 The easiest way to interact with the framework is through the web interface.
@@ -95,7 +95,7 @@ You can also run individual modules from the command line:
 
 ---
 
-## 📂 **Project Structure**
+## **Project Structure**
 
 ```text
 quant-research-framework/
@@ -128,7 +128,7 @@ quant-research-framework/
 
 ---
 
-## 🔮 **Roadmap**
+## **Roadmap**
 
 - [x] **Core Framework:** Data Pipeline, Backtester, and Metrics.
 - [x] **Dashboard:** Interactive Web App for visualizing results.
@@ -139,7 +139,7 @@ quant-research-framework/
 
 ---
 
-## 👨‍💻 **Author**
+## **Author**
 
 **Joan Batlló**  
 *AI & Data Science Student | FinTech Enthusiast*

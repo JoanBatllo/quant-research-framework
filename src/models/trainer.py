@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 
 class ModelTrainer:
@@ -37,16 +38,27 @@ class ModelTrainer:
         
         return self.X_train, self.X_test, self.y_train, self.y_test
 
-    def train(self, n_estimators=100, max_depth=5, random_state=42):
+    def train(self, model_type='rf', n_estimators=100, max_depth=5, random_state=42):
         """
-        Train a Random Forest Classifier.
+        Train a Classifier (Random Forest or XGBoost).
         """
-        self.model = RandomForestClassifier(
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            random_state=random_state,
-            class_weight='balanced'  # Handle class imbalance if any
-        )
+        if model_type == 'rf':
+            self.model = RandomForestClassifier(
+                n_estimators=n_estimators,
+                max_depth=max_depth,
+                random_state=random_state,
+                class_weight='balanced'
+            )
+        elif model_type == 'xgb':
+            self.model = XGBClassifier(
+                n_estimators=n_estimators,
+                max_depth=max_depth,
+                learning_rate=0.05, # Conservative learning rate
+                random_state=random_state,
+                use_label_encoder=False,
+                eval_metric='logloss'
+            )
+            
         self.model.fit(self.X_train, self.y_train)
         return self.model
 
@@ -74,7 +86,8 @@ class ModelTrainer:
         indices = np.argsort(importances)[::-1]
         
         fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(x=importances[indices], y=np.array(self.features)[indices], ax=ax, palette="viridis")
+        # Fix seaborn warning: assign hue to y and set legend=False
+        sns.barplot(x=importances[indices], y=np.array(self.features)[indices], ax=ax, palette="viridis", hue=np.array(self.features)[indices], legend=False)
         ax.set_title("Feature Importance")
         ax.set_xlabel("Importance Score")
         ax.set_ylabel("Features")

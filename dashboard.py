@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from src.data.loaders import get_price_data
 from src.data.preprocessing import prepare_price_data, standardize_price_dataframe, add_return_columns
-from src.backtesting.strategies import always_long, moving_average_crossover
+from src.backtesting.strategies import always_long, moving_average_crossover, ml_strategy
 from src.backtesting.engine import run_backtest
 from src.analysis.performance import summarize_performance
 from src.data.features import generate_features
@@ -31,7 +31,12 @@ with tab_backtest:
     col_strat, col_act = st.columns([2, 1])
     
     with col_strat:
-        strategy_name = st.selectbox("Select Strategy", ["Always Long (Buy & Hold)", "Simple MA Crossover"])
+        # Dynamic Strategy List
+        strat_options = ["Always Long (Buy & Hold)", "Simple MA Crossover"]
+        if 'ml_model' in st.session_state:
+            strat_options.append("🤖 ML Strategy (Trained Model)")
+            
+        strategy_name = st.selectbox("Select Strategy", strat_options)
     
     # Strat Params
     fast_window, slow_window = 10, 50
@@ -39,6 +44,8 @@ with tab_backtest:
         col_p1, col_p2 = st.columns(2)
         fast_window = col_p1.slider("Fast MA", 2, 50, 10)
         slow_window = col_p2.slider("Slow MA", 10, 200, 50)
+    elif strategy_name == "🤖 ML Strategy (Trained Model)":
+        st.caption(f"Using trained model with features: {st.session_state['ml_features']}")
 
     with col_act:
         st.write("") # Spacer
@@ -58,9 +65,14 @@ with tab_backtest:
                 if strategy_name == "Always Long (Buy & Hold)":
                     signal = always_long(df)
                     expl = "Buys and holds the asset."
-                else:
+                elif strategy_name == "Simple MA Crossover":
                     signal = moving_average_crossover(df, fast_window, slow_window)
                     expl = f"Buy when MA({fast_window}) > MA({slow_window})."
+                elif strategy_name == "🤖 ML Strategy (Trained Model)":
+                    # Generate features on the fly for the backtest period
+                    df = generate_features(df)
+                    signal = ml_strategy(df, st.session_state['ml_model'], st.session_state['ml_features'])
+                    expl = "Uses the Random Forest model trained in the ML Lab."
 
                 res = run_backtest(df, signal)
                 metrics = summarize_performance(res.equity_curve)
@@ -106,8 +118,9 @@ with tab_ml:
     st.markdown("### 🧬 Machine Learning Model Training")
     st.info("Here we train a Random Forest model to predict if tomorrow's return will be positive based on technical features.")
     
-    col_ml_1, col_ml_2 = st.columns(2)
+    col_ml_1, col_ml_2, col_ml_3 = st.columns(3)
     split_date = col_ml_1.date_input("Train/Test Split Date", pd.to_datetime("2023-01-01"))
+    model_choice = col_ml_2.selectbox("Model Type", ["Random Forest", "XGBoost"])
     
     if st.button("🚀 Train Model", key="btn_train"):
         with st.spinner("Generating Features & Training Model..."):
@@ -136,12 +149,20 @@ with tab_ml:
                 col_te.metric("Test Samples", len(X_test))
                 
                 # 5. Train
-                model = trainer.train()
+                # Map standard names to internal codes
+                model_map = {"Random Forest": "rf", "XGBoost": "xgb"}
+                selected_model_code = model_map[model_choice]
+                
+                model = trainer.train(model_type=selected_model_code)
+                
+                # Save to Session State
+                st.session_state['ml_model'] = model
+                st.session_state['ml_features'] = feature_cols
                 
                 # 6. Evaluate
                 acc, report = trainer.evaluate()
                 
-                st.success(f"Model Trained! Test Accuracy: **{acc:.2%}**")
+                st.success(f"Model Trained! Test Accuracy: **{acc:.2%}**. Saved to Session State!")
                 
                 # 7. Visualizations
                 st.subheader("Model Insights")

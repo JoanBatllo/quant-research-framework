@@ -2,6 +2,7 @@ matplotlib
 numpy
 pandas
 scikit-learn
+xgboost
 seaborn
 streamlit
 yfinance
