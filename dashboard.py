@@ -178,6 +178,49 @@ with tab_ml:
                 # Detailed Report
                 st.subheader("Classification Report")
                 st.text(pd.DataFrame(report).transpose())
+                
+                # --- WALK-FORWARD VALIDATION SECTION ---
+                st.markdown("---")
+                st.markdown("### 🧪 Robustness Check: Walk-Forward Validation")
+                st.info("This simulates a realistic scenario where the model is re-trained every year. It prevents 'cheating' by strictly separating past and future data.")
+                
+                with st.expander("Run Walk-Forward Analysis (Advanced)", expanded=False):
+                    col_wf_1, col_wf_2 = st.columns(2)
+                    train_window = col_wf_1.number_input("Train Window (Years)", min_value=1, value=5)
+                    test_window = col_wf_2.number_input("Test Window (Years)", min_value=1, value=1)
+                    
+                    if st.button("🏃‍♂️ Run Walk-Forward Test"):
+                        with st.spinner("Running Rolling Window Analysis... This may take a minute..."):
+                            # Get data again just to be safe (or reuse df_features)
+                            from src.models.validation import walk_forward_validation
+                            
+                            # Map model choice again
+                            model_map = {"Random Forest": "rf", "XGBoost": "xgb"}
+                            selected_model_code = model_map[model_choice]
+                            
+                            results = walk_forward_validation(
+                                data=df_features,
+                                feature_cols=feature_cols,
+                                target_col='Target',
+                                train_window_years=train_window,
+                                test_window_years=test_window,
+                                model_type=selected_model_code
+                            )
+                            
+                            # Display Results
+                            st.success(f"Analysis Complete!")
+                            st.metric("🏆 Overall Realistic Accuracy", f"{results['overall_accuracy']:.2%}")
+                            
+                            # Metrics DataFrame
+                            res_df = pd.DataFrame(results['metrics'])
+                            if not res_df.empty:
+                                st.dataframe(res_df.style.highlight_max(axis=0, subset=['accuracy'], color='lightgreen'))
+                            
+                                # Plot Accuracy over Time
+                                st.subheader("Accuracy per Period")
+                                st.bar_chart(res_df.set_index("period")['accuracy'])
+                            else:
+                                st.warning("Not enough data to run full validation window.")
 
             except Exception as e:
                 st.error(f"ML Error: {e}")

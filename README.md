@@ -66,6 +66,11 @@ It avoids "black-box" backtesting libraries to ensure full transparency and cont
     pip install -r requirements.txt
     ```
 
+    > **🍎 Mac Users:** XGBoost requires OpenMP. If you encounter errors, run:
+    > ```bash
+    > brew install libomp
+    > ```
+
 ---
 
 ## **Usage**
