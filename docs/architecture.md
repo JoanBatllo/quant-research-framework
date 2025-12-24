@@ -2,9 +2,9 @@
 
 This document illustrates the high-level architecture of the Quant Research Framework. The system is designed to be modular, separating data ingestion, logic processing, and visualization.
 
-## 🏗 High-Level Diagram
+## High-Level Diagram
 
-## 🏗 System Architecture
+## System Architecture
 
 ### Visual Diagram (Mermaid)
 
@@ -41,7 +41,7 @@ graph TD
 **4. Result**
    `Engine`  ->  `Performance Metrics`  ->  `Dashboard` (User View)
 
-## 📦 Component Descriptions
+## Component Descriptions
 
 ### 1. **Data Layer (`src.data`)**
 *   **Loaders:** Responsible for fetching raw data from external APIs (YFinance). Handles caching to `data/raw`.
@@ -64,7 +64,7 @@ graph TD
 
 ---
 
-## 🔄 Data Flow Example (ML Strategy)
+## Data Flow Example (ML Strategy)
 
 1.  User selects "SPY" and "Train Model" in Dashboard.
 2.  `Loader` fetches raw OHLCV.

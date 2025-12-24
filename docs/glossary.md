@@ -2,7 +2,7 @@
 
 A reference guide for the financial and technical terminology used in this project.
 
-## 📈 Quantitative Finance
+## Quantitative Finance
 
 ### **Backtesting**
 The process of simulating a trading strategy using historical data to verify its profitability and risk profile before risking real capital.
@@ -29,7 +29,7 @@ Fees paid to execute a trade (commissions, spread, slippage). Ignoring these in 
 
 ---
 
-## 🤖 Machine Learning & Data
+## Machine Learning & Data
 
 ### **Feature Engineering**
 The process of using domain knowledge to extract features (characteristics) from raw data.

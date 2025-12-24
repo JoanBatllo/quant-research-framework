@@ -1,4 +1,4 @@
-# 🚀 Quant Research Framework
+# Quant Research Framework
 
 <div align="center">
   <img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="Python Version">
@@ -35,8 +35,9 @@ It avoids "black-box" backtesting libraries to ensure full transparency and cont
 - **Vectorized Backtester:** High-performance engine using pandas vectorization for instantaneous strategy simulation.
 
 ### **Machine Learning Integration**
-- **Feature Engineering:** Automated calculation of Technical Indicators (RSI, Momentum, Volatility, Moving Averages).
-- **ML Workflow:** End-to-end pipeline for training, validating, and testing models (e.g., Random Forest) to predict market direction.
+- **Feature Engineering:** Automated calculation of Technical Indicators (RSI, Momentum, Volatility, Moving Averages, MACD, Bollinger Bands, ATR).
+- **ML Workflow:** End-to-end pipeline for training, validating, and testing models (Random Forest, XGBoost) to predict market direction.
+- **Validation:** Robust Walk-Forward Validation (Rolling Window) to prevent overfitting.
 - **Evaluation:** Visual tools for Feature Importance, Confusion Matrices, and Classification Reports.
 
 ### **Interactive Dashboard**
@@ -66,7 +67,7 @@ It avoids "black-box" backtesting libraries to ensure full transparency and cont
     pip install -r requirements.txt
     ```
 
-    > **🍎 Mac Users:** XGBoost requires OpenMP. If you encounter errors, run:
+    > **Note for Mac Users:** XGBoost requires OpenMP. If you encounter errors, run:
     > ```bash
     > brew install libomp
     > ```
@@ -105,17 +106,18 @@ You can also run individual modules from the command line:
 ```text
 quant-research-framework/
 │
-├── dashboard.py                  # 🚀 Main Entry Point (Web App)
+├── dashboard.py                  # Main Entry Point (Web App)
 ├── requirements.txt              # Project Dependencies
 │
 ├── src/
 │   ├── data/
 │   │   ├── loaders.py            # Data ingestion (YFinance)
 │   │   ├── preprocessing.py      # Cleaning & Normalization
-│   │   └── features.py           # 🧠 Feature Engineering for ML
+│   │   └── features.py           # Feature Engineering for ML
 │   │
 │   ├── models/
-│   │   └── trainer.py            # 🤖 ML Model Training & Evaluation Logic
+│   │   ├── trainer.py            # ML Model Training & Evaluation Logic
+│   │   └── validation.py         # Walk-Forward Validation Logic
 │   │
 │   ├── backtesting/
 │   │   ├── engine.py             # Vectorized Backtest Engine
@@ -138,8 +140,9 @@ quant-research-framework/
 - [x] **Core Framework:** Data Pipeline, Backtester, and Metrics.
 - [x] **Dashboard:** Interactive Web App for visualizing results.
 - [x] **Machine Learning:** Feature Engineering & Model Training Module.
-- [ ] **AI Strategy:** Deploying the trained ML model as a live trading strategy.
-- [ ] **optimization:** Implementing Walk-Forward Analysis and Hyperparameter Tuning.
+- [x] **AI Strategy:** Deploying the trained ML model as a live trading strategy.
+- [x] **Optimization:** Implementing Walk-Forward Analysis.
+- [ ] **Advanced Optimization:** Hyperparameter Tuning (Optuna/GridSearch).
 - [ ] **Portfolio Management:** Support for multi-asset portfolios and rebalancing.
 
 ---
