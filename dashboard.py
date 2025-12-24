@@ -126,30 +126,19 @@ with tab_ml:
         with st.spinner("Generating Features & Training Model..."):
             try:
                 # 1. Load Data
-                df_ml = get_price_data(ticker, "2010-01-01", str(end_date)) # Use long history for ML
-                
-                # Preprocess (Standardize + Returns)
+                df_ml = get_price_data(ticker, "2010-01-01", str(end_date)) 
                 df_ml = standardize_price_dataframe(df_ml)
-                # Note: generate_features already calculates returns if missing, but we call it here for consistency
-                # df_ml = add_return_columns(df_ml) 
 
                 # 2. Features
                 df_features = generate_features(df_ml)
-                st.write(f"Data Shape after Feature Engineering: {df_features.shape}")
                 
                 # 3. Setup Trainer
                 feature_cols = [c for c in df_features.columns if c not in ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume', 'Return', 'Target']]
                 trainer = ModelTrainer(df_features, feature_cols, target='Target')
                 
-                # 4. Split
-                X_train, X_test, y_train, y_test = trainer.split_data(str(split_date))
+                # 4. Split and Train
+                trainer.split_data(str(split_date))
                 
-                col_tr, col_te = st.columns(2)
-                col_tr.metric("Training Samples", len(X_train))
-                col_te.metric("Test Samples", len(X_test))
-                
-                # 5. Train
-                # Map standard names to internal codes
                 model_map = {"Random Forest": "rf", "XGBoost": "xgb"}
                 selected_model_code = model_map[model_choice]
                 
@@ -158,70 +147,76 @@ with tab_ml:
                 # Save to Session State
                 st.session_state['ml_model'] = model
                 st.session_state['ml_features'] = feature_cols
+                st.session_state['df_features'] = df_features
+                st.session_state['model_code'] = selected_model_code # Save selected model type
                 
-                # 6. Evaluate
-                acc, report = trainer.evaluate()
-                
-                st.success(f"Model Trained! Test Accuracy: **{acc:.2%}**. Saved to Session State!")
-                
-                # 7. Visualizations
-                st.subheader("Model Insights")
-                
-                # Feature Importance
-                fig_imp = trainer.plot_feature_importance()
-                st.pyplot(fig_imp)
-                
-                # Confusion Matrix
-                fig_cm = trainer.plot_confusion_matrix()
-                st.pyplot(fig_cm)
-                
-                # Detailed Report
-                st.subheader("Classification Report")
-                st.text(pd.DataFrame(report).transpose())
-                
-                # --- WALK-FORWARD VALIDATION SECTION ---
-                st.markdown("---")
-                st.markdown("### 🧪 Robustness Check: Walk-Forward Validation")
-                st.info("This simulates a realistic scenario where the model is re-trained every year. It prevents 'cheating' by strictly separating past and future data.")
-                
-                with st.expander("Run Walk-Forward Analysis (Advanced)", expanded=False):
-                    col_wf_1, col_wf_2 = st.columns(2)
-                    train_window = col_wf_1.number_input("Train Window (Years)", min_value=1, value=5)
-                    test_window = col_wf_2.number_input("Test Window (Years)", min_value=1, value=1)
-                    
-                    if st.button("🏃‍♂️ Run Walk-Forward Test"):
-                        with st.spinner("Running Rolling Window Analysis... This may take a minute..."):
-                            # Get data again just to be safe (or reuse df_features)
-                            from src.models.validation import walk_forward_validation
-                            
-                            # Map model choice again
-                            model_map = {"Random Forest": "rf", "XGBoost": "xgb"}
-                            selected_model_code = model_map[model_choice]
-                            
-                            results = walk_forward_validation(
-                                data=df_features,
-                                feature_cols=feature_cols,
-                                target_col='Target',
-                                train_window_years=train_window,
-                                test_window_years=test_window,
-                                model_type=selected_model_code
-                            )
-                            
-                            # Display Results
-                            st.success(f"Analysis Complete!")
-                            st.metric("🏆 Overall Realistic Accuracy", f"{results['overall_accuracy']:.2%}")
-                            
-                            # Metrics DataFrame
-                            res_df = pd.DataFrame(results['metrics'])
-                            if not res_df.empty:
-                                st.dataframe(res_df.style.highlight_max(axis=0, subset=['accuracy'], color='lightgreen'))
-                            
-                                # Plot Accuracy over Time
-                                st.subheader("Accuracy per Period")
-                                st.bar_chart(res_df.set_index("period")['accuracy'])
-                            else:
-                                st.warning("Not enough data to run full validation window.")
+                st.success(f"Model Trained successfully!")
 
             except Exception as e:
                 st.error(f"ML Error: {e}")
+
+    # --- PERSISTENT RESULTS SECTION ---
+    if 'ml_model' in st.session_state and 'df_features' in st.session_state:
+        st.markdown("---")
+        
+        # We reconstruct a temporary trainer to use its plotting helpers
+        df_feats = st.session_state['df_features']
+        feats = st.session_state['ml_features']
+        # We need to re-split to get X_test for evaluation
+        trainer_viz = ModelTrainer(df_feats, feats, target='Target')
+        trainer_viz.split_data(str(split_date))
+        trainer_viz.model = st.session_state['ml_model'] # Attach trained model
+        
+        # Evaluate
+        acc, report = trainer_viz.evaluate()
+        
+        col_metrics_1, col_metrics_2 = st.columns(2)
+        col_metrics_1.metric("Test Accuracy", f"{acc:.2%}")
+        col_metrics_2.text(f"Model: {st.session_state.get('model_code', 'Unknown')}")
+
+        st.subheader("Model Insights")
+        
+        tab_viz_1, tab_viz_2, tab_viz_3 = st.tabs(["Feature Importance", "Confusion Matrix", "Walk-Forward Validation"])
+        
+        with tab_viz_1:
+            fig_imp = trainer_viz.plot_feature_importance()
+            st.pyplot(fig_imp)
+            
+        with tab_viz_2:
+            fig_cm = trainer_viz.plot_confusion_matrix()
+            st.pyplot(fig_cm)
+            st.text("Classification Report:")
+            st.dataframe(pd.DataFrame(report).transpose())
+
+        with tab_viz_3:
+            st.markdown("### 🧪 Robustness Check: Walk-Forward Validation")
+            st.info("This simulates a realistic scenario where the model is re-trained every year.")
+            
+            col_wf_1, col_wf_2 = st.columns(2)
+            train_window = col_wf_1.number_input("Train Window (Years)", min_value=1, value=5)
+            test_window = col_wf_2.number_input("Test Window (Years)", min_value=1, value=1)
+            
+            if st.button("🏃‍♂️ Run Walk-Forward Test", key="btn_wf"):
+                with st.spinner("Running Rolling Window Analysis..."):
+                    from src.models.validation import walk_forward_validation
+
+                    results = walk_forward_validation(
+                        data=df_feats,
+                        feature_cols=feats,
+                        target_col='Target',
+                        train_window_years=train_window,
+                        test_window_years=test_window,
+                        model_type=st.session_state.get('model_code', 'rf')
+                    )
+                    
+                    st.success(f"Analysis Complete!")
+                    st.metric("🏆 Overall Realistic Accuracy", f"{results['overall_accuracy']:.2%}")
+                    
+                    res_df = pd.DataFrame(results['metrics'])
+                    if not res_df.empty:
+                        st.dataframe(res_df.style.highlight_max(axis=0, subset=['accuracy'], color='lightgreen'))
+                        st.subheader("Accuracy per Period")
+                        st.bar_chart(res_df.set_index("period")['accuracy'])
+                    else:
+                        st.warning("Not enough data.")
 
