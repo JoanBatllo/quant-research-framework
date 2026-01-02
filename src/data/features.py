@@ -73,17 +73,24 @@ def generate_features(data: pd.DataFrame) -> pd.DataFrame:
         vol_ma = vol_ma.replace(0, np.nan) 
         df["RVOL"] = vol_series / vol_ma
 
-    # --- 6. MACD (Trend) ---
-    # Moving Average Convergence Divergence
-    # MACD Line = 12-day EMA - 26-day EMA
+    # --- 6. MACD (Trend) -> Changed to PPO (Percentage Price Oscillator) ---
+    # Standard MACD uses absolute price diffs, which is bad for multi-asset training (BTC vs SPY).
+    # PPO = ((12-day EMA - 26-day EMA) / 26-day EMA) * 100
     ema_12 = close_series.ewm(span=12, adjust=False).mean()
     ema_26 = close_series.ewm(span=26, adjust=False).mean()
-    macd_line = ema_12 - ema_26
-    signal_line = macd_line.ewm(span=9, adjust=False).mean()
     
-    # Feature: MACD Histogram (Distance between MACD and Signal)
-    # Positive = Bullish momentum, Negative = Bearish
-    df["MACD_Hist"] = macd_line - signal_line
+    # Avoid zero division
+    ema_26 = ema_26.replace(0, np.nan)
+    
+    ppo_line = ((ema_12 - ema_26) / ema_26) * 100
+    signal_line = ppo_line.ewm(span=9, adjust=False).mean()
+    
+    # Feature: PPO Histogram (Distance between PPO and Signal)
+    df["PPO_Hist"] = ppo_line - signal_line
+    # We keep "MACD_Hist" name purely for backwards compatibility if needed, 
+    # but strictly it is now PPO. Let's start using new names or alias.
+    # ideally we rename column to PPO to be explicit.
+    df["PPO_Line"] = ppo_line
 
     # --- 7. Bollinger Bands (Volatility & Mean Reversion) ---
     # 20-day SMA +/- 2 Std Dev

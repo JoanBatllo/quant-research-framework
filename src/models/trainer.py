@@ -38,26 +38,39 @@ class ModelTrainer:
         
         return self.X_train, self.X_test, self.y_train, self.y_test
 
-    def train(self, model_type='rf', n_estimators=100, max_depth=5, random_state=42):
+    def train(self, model_type='rf', **model_params):
         """
         Train a Classifier (Random Forest or XGBoost).
+        Accepts arbitrary hyperparameters via **model_params.
         """
         if model_type == 'rf':
-            self.model = RandomForestClassifier(
-                n_estimators=n_estimators,
-                max_depth=max_depth,
-                random_state=random_state,
-                class_weight='balanced'
-            )
+            # Default params
+            params = {
+                'n_estimators': 100,
+                'max_depth': 5,
+                'random_state': 42,
+                'class_weight': 'balanced',
+                'n_jobs': -1
+            }
+            # Update with provided params
+            params.update(model_params)
+            
+            self.model = RandomForestClassifier(**params)
+            
         elif model_type == 'xgb':
-            self.model = XGBClassifier(
-                n_estimators=n_estimators,
-                max_depth=max_depth,
-                learning_rate=0.05, # Conservative learning rate
-                random_state=random_state,
-                use_label_encoder=False,
-                eval_metric='logloss'
-            )
+            # Default params
+            params = {
+                'n_estimators': 100,
+                'max_depth': 5,
+                'learning_rate': 0.05,
+                'random_state': 42,
+                'eval_metric': 'logloss',
+                'n_jobs': -1
+            }
+            # Update with provided params
+            params.update(model_params)
+            
+            self.model = XGBClassifier(**params)
             
         self.model.fit(self.X_train, self.y_train)
         return self.model

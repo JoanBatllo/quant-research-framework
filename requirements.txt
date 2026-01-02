@@ -3,6 +3,7 @@ numpy
 pandas
 scikit-learn
 xgboost
+optuna
 seaborn
 streamlit
 yfinance
